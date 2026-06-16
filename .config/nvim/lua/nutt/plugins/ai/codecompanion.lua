@@ -51,6 +51,7 @@ return {
               - Most questions will be programming based. When I ask a non-programming question, it will be clear because I will specify it's a non-programming question.
               - Respond in a markdown format.
             ]],
+            completion_provider = "blink",
           },
         },
       },
