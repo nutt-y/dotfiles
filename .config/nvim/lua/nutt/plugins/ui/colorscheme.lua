@@ -331,12 +331,12 @@ return {
   --   "nyoom-engineering/oxocarbon.nvim",
   --   config = function() end,
   -- },
-  {
-    "kungfusheep/mfd.nvim",
-    opts = {
-      bright_comments = true,
-    },
-  },
+  -- {
+  --   "kungfusheep/mfd.nvim",
+  --   opts = {
+  --     bright_comments = true,
+  --   },
+  -- },
   {
     "nutt-y/jumble.nvim",
     lazy = false,
@@ -353,7 +353,7 @@ return {
         "vscode",
         "fluoromachine",
         "teide",
-        "mfd-lumon",
+        -- "mfd-lumon",
         -- "cyberdream",
         -- "onedark",
         -- "gruvbox",
