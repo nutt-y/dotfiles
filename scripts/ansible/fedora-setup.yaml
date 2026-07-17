@@ -170,7 +170,7 @@
 
         - name: Install Herdr
           ansible.builtin.shell: |
-            - curl -fsSL https://herdr.dev/install.sh | sh
+            curl -fsSL https://herdr.dev/install.sh | sh
           environment:
             HERDR_INSTALL_DIR: /usr/local/bin
 
