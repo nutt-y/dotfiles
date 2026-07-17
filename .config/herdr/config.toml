@@ -1,5 +1,48 @@
 [keys]
 prefix = "ctrl+space"
 
+# Splits (tmux used | and -)
+split_vertical = "prefix+|"
+split_horizontal = "prefix+minus"
+
+# Tab Cycling
+next_tab = "prefix+n"
+previous_tab = "prefix+p"
+
+# Close tab
+# close_tab = ""
+# [[keys.command]]
+# key = "prefix+x"
+# type = "popup"
+# command = "bash -c 'read -p \"Close tab? (y/n) \" confirm; if [ \"$confirm\" = \"y\" ]; then herdr tab close; fi'"
+# description = "close tab with confirmation"
+# width = "30%"
+
+# Zoom (tmux used m)
+zoom = "prefix+m"
+
+# Detach from the session
+detach = "prefix+d"
+
+# Reload config
+reload_config = "prefix+r"
+
+# Resize mode (tmux had direct arrows, herdr uses a mode)
+resize_mode = "prefix+shift+r"
+
+# Pane close
+close_pane = "prefix+x"
+
+# Close sidetab
+toggle_sidebar = "prefix+e"
+
+# Edit scrollback
+edit_scrollback = "prefix+shift+="
+
+# focus agent sidebar
+next_agent = "prefix+a"
+previous_agent = "prefix+s"
+
+
 [theme]
 name = "terminal"
