@@ -168,6 +168,12 @@
           environment:
             INSTALL_DIR: /usr/local/bin
 
+        - name: Install Herdr
+          ansible.builtin.shell: |
+            - curl -fsSL https://herdr.dev/install.sh | sh
+          environment:
+            INSTALL_DIR: /usr/local/bin
+
     - name: Tmux Plugin Manager
       block:
         - name: Install TPM
@@ -187,7 +193,8 @@
         - name: Download dotfiles repo if we have not
           become_user: "{{ user_name }}"
           ansible.builtin.git:
-            repo: "{{ 'git@github.com:nutt-y/dotfiles.git' if ssh_check.rc == 0 else
+            repo:
+              "{{ 'git@github.com:nutt-y/dotfiles.git' if ssh_check.rc == 0 else
               'https://github.com/nutt-y/dotfiles' }}"
             dest: "{{ home_dir }}/dotfiles"
 
