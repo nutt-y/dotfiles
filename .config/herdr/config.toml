@@ -1,0 +1,5 @@
+[keys]
+prefix = "ctrl+space"
+
+[theme]
+name = "terminal"
