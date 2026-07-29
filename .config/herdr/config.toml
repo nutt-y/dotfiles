@@ -1,6 +1,6 @@
 onboarding = false
 [keys]
-prefix = "ctrl+b"
+prefix = "ctrl+a"
 
 # Splits (tmux used | and -)
 split_vertical = "prefix+|"
@@ -44,6 +44,8 @@ edit_scrollback = "prefix+shift+="
 next_agent = "prefix+a"
 previous_agent = "prefix+s"
 
+# Create new tab
+new_tab = "prefix+c"
 
 [theme]
 name = "terminal"
