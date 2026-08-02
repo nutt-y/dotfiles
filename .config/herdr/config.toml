@@ -1,6 +1,6 @@
 onboarding = false
 [keys]
-prefix = "ctrl+a"
+prefix = "ctrl+i"
 
 # Splits (tmux used | and -)
 split_vertical = "prefix+|"
