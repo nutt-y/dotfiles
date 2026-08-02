@@ -12,6 +12,8 @@ return {
     },
     opts = function()
       ---@class LspConfigOpts
+      ---@field enabled? boolean
+      ---@field servers? table<string, LspServerConfig>
       local settings = {
         --- Diagnostic Options
         ---@type vim.diagnostic.Opts
@@ -83,7 +85,6 @@ return {
         ---@field enabled? boolean
         ---@field mason? boolean
 
-        ---@type table<string, LspServerConfig>
         servers = {
           lua_ls = {
             -- mason = false, -- set to false if you don't want this server to be installed with mason
@@ -161,7 +162,7 @@ return {
           -- Get Client Capabilities
           ---Get the capabilities of the client
           ---@param client vim.lsp.Client
-          ---@param method vim.lsp.protocol.Method
+          ---@param method vim.lsp.protocol.Method.ClientToServer | vim.lsp.protocol.Method.Registration
           ---@param bufnr integer some lsp support methods only in specific files
           local client_supports_method = function(client, method, bufnr)
             return client:supports_method(method, bufnr)
@@ -183,17 +184,8 @@ return {
             end
 
             -- Code lens
-            if
-              opts.codelens.enabled
-              and vim.lsp.codelens
-              and client_supports_method(client, "textDocument/codeLens", buf)
-            then
-              vim.lsp.codelens.refresh()
-
-              vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
-                buffer = buf,
-                callback = vim.lsp.codelens.refresh,
-              })
+            if opts.codelens.enabled and client_supports_method(client, "textDocument/codeLens", buf) then
+              vim.lsp.codelens.enable(true)
             end
           end
 
@@ -221,7 +213,7 @@ return {
         end,
       })
 
-      local servers = opts.servers
+      local servers = opts.servers or {}
       local blink = require("blink.cmp")
       local capabilities = vim.tbl_deep_extend(
         "force",
