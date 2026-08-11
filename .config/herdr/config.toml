@@ -46,6 +46,7 @@ previous_agent = "prefix+s"
 
 # Create new tab
 new_tab = "prefix+c"
+rename_tab = "prefix+,"
 
 [theme]
 name = "terminal"
