@@ -50,6 +50,9 @@ new_tab = "prefix+c"
 [theme]
 name = "terminal"
 
+# UI
+
+
 # Vim Navigation
 [[keys.command]]
 key = "ctrl+h"
@@ -74,3 +77,9 @@ key = "ctrl+l"
 type = "plugin_action"
 command = "vim-herdr-navigation.right"
 description = "navigate right (vim/herdr)"
+
+[ui.toast]
+delivery = "herdr"
+
+[ui.toast.herdr]
+position = "bottom-right"
