@@ -54,7 +54,7 @@ Development
         indent = {
           only_scope = false,
           enabled = true,
-          hl = { "SnacksIndent1", "SnacksIndent2", "SnacksIndent3", "SnacksIndent4" },
+          hl = { "SnacksIndent1", "SnacksIndent2", "SnacksIndent3", "SnacksIndent4", "SnacksIndent5" },
         },
         scope = {
           enabled = true,
