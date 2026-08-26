@@ -1,8 +1,8 @@
-# Dummy environment in case I need it
+# Dummy environment incase we need it
 FROM fedora:44
 
 # Install necesarry dependencies
-RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs
+RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs ssh
 
 # Create the user to run everything with
 RUN useradd -m -s /bin/bash dawg && \
@@ -11,6 +11,12 @@ RUN echo "dawg ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER dawg
 WORKDIR /home/dawg
+
+# Setup git for user dawg
+RUN git config --global user.name "dawg"
+
+# Add GitHub's SSH host key so that we can download anything that need to be preinstalled
+RUN mkdir -p ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # Setup environment
 RUN git clone https://github.com/nutt-y/dotfiles dotfiles
