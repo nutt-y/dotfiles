@@ -2,7 +2,7 @@
 FROM fedora:44
 
 # Install necesarry dependencies
-RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs tree-sitter
+RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs tree-sitter gcc clang make
 
 # Create the user to run everything with
 RUN useradd -m -s /bin/bash dawg && \
