@@ -1,8 +1,11 @@
 # Dummy container with full config
+# In order to be able to use tmux+neovim do the following:
+# export DOCKER_CONFIG="$PWD/.docker"
+# echo '{"detachKeys": "ctrl+\\"}' >> '$PWD/.docker/config.json'
 FROM fedora:44
 
 # Install necesarry dependencies
-RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs tree-sitter gcc clang make
+RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs tree-sitter gcc clang make ps
 
 # Create the user to run everything with
 RUN useradd -m -s /bin/bash dawg && \
