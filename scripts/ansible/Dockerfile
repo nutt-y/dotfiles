@@ -2,7 +2,7 @@
 FROM fedora:44
 
 # Install necesarry dependencies
-RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs
+RUN dnf install -y git ca-certificates sudo ansible-core ansible python-passlib nodejs tree-sitter
 
 # Create the user to run everything with
 RUN useradd -m -s /bin/bash dawg && \
@@ -24,3 +24,6 @@ RUN sudo mv /usr/bin/ssh /usr/bin/ssh.disabled && \
   export USER_NAME=dawg PASSWORD=0000 && \
   sudo -E ansible-playbook -i inventory.yaml fedora-setup.yaml --limit localhost && \
   sudo mv /usr/bin/ssh.disabled /usr/bin/ssh
+
+# Setup bob
+RUN bob use stable && echo 'export PATH="/home/dawg/.local/share/bob/nvim-bin:$PATH"' >> /home/dawg/.zshrc
