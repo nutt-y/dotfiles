@@ -141,46 +141,7 @@ return {
       }
     end,
   },
-  {
-    "maxmx03/fluoromachine.nvim",
-    opts = function(_, _)
-      local colors = require("fluoromachine.colors.fluoromachine")
 
-      return {
-        theme = "retrowave",
-        transparent = true,
-        glow = false,
-        styles = {
-          comments = { italic = true },
-          functions = { bold = true, italic = true },
-          variables = { italic = true },
-        },
-        overrides = {
-          NormalFloat = {
-            fg = "none",
-            bg = "none",
-          },
-          LineNr = {
-            bold = true,
-            fg = colors.pink,
-            bg = "none",
-          },
-          LineNrAbove = {
-            fg = colors.cyan,
-            bg = "none",
-          },
-          LineNrBelow = {
-            fg = colors.cyan,
-            bg = "none",
-          },
-          FlashBackdrop = {
-            fg = colors.fg,
-          },
-          FlashLabel = { bg = colors.purple, fg = "#FFFFFF" },
-        },
-      }
-    end,
-  },
   {
     "scottmckendry/cyberdream.nvim",
     opts = function()
@@ -241,6 +202,73 @@ return {
       end,
     },
   },
+  {
+    "2giosangmitom/nightfall.nvim",
+    opts = {
+      transparent = true,
+      highlight_overrides = {
+        ---@module "nightfall"
+        ---@param colors NightfallPalette
+        ---@return table
+        nightfall = function(colors)
+          return {
+            LineNr = {
+              bg = "none",
+              fg = colors.coral,
+            },
+            LineNrAbove = {
+              bg = "none",
+              fg = colors.lavender,
+            },
+            LineNrBelow = {
+              bg = "none",
+              fg = colors.lavender,
+            },
+          }
+        end,
+      },
+    },
+  },
+  -- {
+  --   "maxmx03/fluoromachine.nvim",
+  --   opts = function(_, _)
+  --     local colors = require("fluoromachine.colors.fluoromachine")
+  --
+  --     return {
+  --       theme = "retrowave",
+  --       transparent = true,
+  --       glow = false,
+  --       styles = {
+  --         comments = { italic = true },
+  --         functions = { bold = true, italic = true },
+  --         variables = { italic = true },
+  --       },
+  --       overrides = {
+  --         NormalFloat = {
+  --           fg = "none",
+  --           bg = "none",
+  --         },
+  --         LineNr = {
+  --           bold = true,
+  --           fg = colors.pink,
+  --           bg = "none",
+  --         },
+  --         LineNrAbove = {
+  --           fg = colors.cyan,
+  --           bg = "none",
+  --         },
+  --         LineNrBelow = {
+  --           fg = colors.cyan,
+  --           bg = "none",
+  --         },
+  --         FlashBackdrop = {
+  --           fg = colors.fg,
+  --         },
+  --         FlashLabel = { bg = colors.purple, fg = "#FFFFFF" },
+  --       },
+  --     }
+  --   end,
+  -- },
   -- {
   --   "navarasu/onedark.nvim",
   --   config = function()
@@ -351,8 +379,9 @@ return {
         "tokyonight",
         "catppuccin-nvim",
         "vscode",
-        "fluoromachine",
         "teide",
+        "nightfall",
+        -- "fluoromachine",
         -- "mfd-lumon",
         -- "cyberdream",
         -- "onedark",
