@@ -9,6 +9,7 @@
 // Learn more about configuration at https://docs.vicinae.com/config
 
 {
+   "$schema": "https://vicinae.com/schemas/config.json",
    "close_on_focus_loss": true,
    "pop_to_root_on_close": true,
    "keybinding": "emacs",
