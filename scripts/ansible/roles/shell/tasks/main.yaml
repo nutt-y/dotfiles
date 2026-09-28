@@ -1,0 +1,29 @@
+---
+- name: Change user shell to zsh
+  ansible.builtin.user:
+    name: "{{ user_name }}"
+    shell: "{{ zsh_path }}"
+  when: not is_macos
+
+- name: Install ZAP Plugin Manager
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  ansible.builtin.shell: |
+    zsh <(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --branch release-v1
+  args:
+    executable: "{{ zsh_path }}"
+    creates: "{{ home_dir }}/.local/share/zap"
+
+- name: Remove old .zshrc files
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  ansible.builtin.file:
+    path: "{{ home_dir }}/.zshrc"
+    state: absent
+
+- name: Install Tmux Plugin Manager
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  ansible.builtin.git:
+    repo: https://github.com/tmux-plugins/tpm
+    dest: "{{ home_dir }}/.tmux/plugins/tpm"

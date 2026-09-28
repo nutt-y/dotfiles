@@ -1,0 +1,41 @@
+---
+- name: Check if SSH is available
+  ansible.builtin.command: ssh -V
+  register: ssh_check
+  failed_when: false
+  changed_when: false
+
+- name: Download dotfiles repo if we have not
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  ansible.builtin.git:
+    repo: >-
+      {{ 'git@github.com:nutt-y/dotfiles.git' if ssh_check.rc == 0 else 'https://github.com/nutt-y/dotfiles' }}
+    dest: "{{ home_dir }}/dotfiles"
+
+- name: Check if dotfiles directory exists
+  ansible.builtin.stat:
+    path: "{{ home_dir }}/dotfiles"
+  register: dotfiles_exists
+
+- name: Stow Files
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  ansible.builtin.shell: |
+    cd {{ home_dir }}/dotfiles && stow .
+  args:
+    chdir: "{{ home_dir }}/dotfiles"
+  when: dotfiles_exists.stat.exists
+
+- name: Add profile.zsh to shell
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  ansible.builtin.lineinfile:
+    path: "{{ home_dir }}/.zshrc"
+    line: 'source "$HOME/profile.zsh"'
+    create: yes
+
+- name: Display Complete
+  ansible.builtin.debug:
+    msg: |
+      Installation Complete!

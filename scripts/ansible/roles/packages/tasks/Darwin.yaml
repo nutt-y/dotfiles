@@ -1,0 +1,30 @@
+---
+- name: Install Homebrew if missing
+  ansible.builtin.shell: |
+    if ! command -v brew >/dev/null 2>&1; then
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+  args:
+    creates: "{{ '/opt/homebrew/bin/brew' if ansible_architecture == 'arm64' else '/usr/local/bin/brew' }}"
+  become: false
+
+- name: Update Homebrew
+  community.general.homebrew:
+    update_homebrew: yes
+  become: false
+
+- name: Install core packages
+  community.general.homebrew:
+    name:
+      - zsh
+      - git
+      - tmux
+      - fzf
+      - restic
+      - fd
+      - bat
+      - stow
+      - unzip
+      - zoxide
+    state: present
+  become: false

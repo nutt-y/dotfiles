@@ -1,0 +1,67 @@
+---
+- name: Neovim (Bob)
+  block:
+    - name: Install Bob (Neovim Manager)
+      ansible.builtin.shell: |
+        curl -fsSL https://raw.githubusercontent.com/MordechaiHadad/bob/master/scripts/install.sh | bash
+
+    - name: Move Neovim to /usr/local/bin
+      ansible.builtin.copy:
+        src: "{{ ansible_facts['env']['HOME'] }}/.local/bin/bob"
+        dest: /usr/local/bin/bob
+        mode: "0755"
+        remote_src: true
+
+    - name: Remove Bob from root home
+      ansible.builtin.file:
+        path: "{{ ansible_facts['env']['HOME'] }}/.local/bin/bob"
+        state: absent
+
+- name: Install LazyDocker
+  ansible.builtin.shell: |
+    cd /tmp && curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+  environment:
+    DIR: /usr/local/bin
+
+- name: Install eza
+  ansible.builtin.shell: |
+    cd /tmp && curl -L https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-gnu.tar.gz | tar xz
+    chmod +x eza
+    mv eza /usr/local/bin/eza
+
+- name: Install Opencode
+  become_user: "{{ user_name }}"
+  ansible.builtin.shell: |
+    cd /tmp && curl -fsSL https://opencode.ai/install | bash
+
+- name: Install Spicetify Reminder
+  ansible.builtin.debug:
+    msg: "Run: curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh"
+
+- name: Install TV Fuzzy Find
+  ansible.builtin.shell: |
+    cd /tmp && curl -fsSL https://alexpasmantier.github.io/television/install.sh | bash
+
+- name: Install CSV Lens
+  ansible.builtin.shell: |
+    cd /tmp && curl -fsSL https://github.com/YS-L/csvlens/releases/download/v0.15.1/csvlens-x86_64-unknown-linux-gnu.tar.xz | tar -xJ --strip-components=1
+    chmod +x csvlens
+    mv csvlens /usr/local/bin/csvlens
+
+- name: Install Scooter
+  ansible.builtin.shell: |
+    cd /tmp && curl -fsSL https://github.com/thomasschafer/scooter/releases/download/v0.9.0/scooter-v0.9.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf -
+    chmod +x scooter
+    mv scooter /usr/local/bin/scooter
+
+- name: Install Gitlogue
+  ansible.builtin.shell: |
+    curl -fsSL https://raw.githubusercontent.com/unhappychoice/gitlogue/main/install.sh | bash
+  environment:
+    INSTALL_DIR: /usr/local/bin
+
+- name: Install Herdr
+  ansible.builtin.shell: |
+    curl -fsSL https://herdr.dev/install.sh | sh
+  environment:
+    HERDR_INSTALL_DIR: /usr/local/bin

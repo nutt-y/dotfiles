@@ -1,5 +1,12 @@
-# Local: export USER_NAME=dev; export PASSWORD=1111; sudo -E ansible-playbook -i inventory.yaml fedora-setup.yaml --limit localhost
-# IP: export USER_NAME=dev export PASSWORD=1111 export TARGET_IP_ADDRESS=0.0.0.0 sudo -E ansible-playbook -i inventory.yaml fedora-setup.yaml --limit remote_host
+# Linux (Local)
+#   export USER_NAME=dev PASSWORD=1111
+#   sudo -E ansible-playbook -i inventory.yaml setup.yaml --limit localhost
+# macOS (local, user must already exist):
+#   export USER_NAME=$(whoami)
+#   ansible-playbook -i inventory.yaml setup.yaml --limit localhost
+# Remote host (any Linux, by IP):
+#   export USER_NAME=dev PASSWORD=1111 TARGET_IP_ADDRESS=0.0.0.0
+#   sudo -E ansible-playbook -i inventory.yaml setup.yaml --limit remote_host
 all:
   hosts:
     localhost:
