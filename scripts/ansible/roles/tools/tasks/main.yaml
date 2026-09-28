@@ -1,0 +1,3 @@
+---
+- name: Include OS-specific tool tasks
+  ansible.builtin.include_tasks: "{{ 'darwin.yaml' if is_macos else 'linux.yaml' }}"

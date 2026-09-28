@@ -1,0 +1,49 @@
+---
+- name: Upgrade all packages
+  ansible.builtin.dnf5:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Install ansible plugins
+  ansible.builtin.package:
+    name: dnf-plugins-core
+    state: present
+
+- name: Enable COPR Repos
+  block:
+    - name: Enable COPR for lazygit
+      community.general.copr:
+        state: enabled
+        name: dejan/lazygit
+
+    - name: Enable COPR for yazi
+      community.general.copr:
+        state: enabled
+        name: lihaohong/yazi
+
+    - name: Enable COPR for vicinae
+      community.general.copr:
+        state: enabled
+        name: quadratech188/vicinae
+
+    - name: Update Package Cache
+      ansible.builtin.dnf5:
+        update_cache: yes
+
+- name: Install core packages
+  ansible.builtin.dnf5:
+    name:
+      - zsh
+      - git
+      - tmux
+      - fzf
+      - restic
+      - fd-find
+      - bat
+      - stow
+      - unzip
+      - zoxide
+      - python3-passlib
+      - ansible
+    state: latest

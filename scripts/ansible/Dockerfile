@@ -25,7 +25,7 @@ RUN git clone https://github.com/nutt-y/dotfiles dotfiles
 RUN sudo mv /usr/bin/ssh /usr/bin/ssh.disabled && \
   cd dotfiles/scripts/ansible && \
   export USER_NAME=dawg PASSWORD=0000 && \
-  sudo -E ansible-playbook -i inventory.yaml fedora-setup.yaml --limit localhost && \
+  sudo -E ansible-playbook -i inventory.yaml setup.yaml --limit localhost && \
   sudo mv /usr/bin/ssh.disabled /usr/bin/ssh
 
 # Setup bob

@@ -1,5 +1,0 @@
----
-- name: Brew Installation
-  hosts: all
-  become: yes # Start as root
-

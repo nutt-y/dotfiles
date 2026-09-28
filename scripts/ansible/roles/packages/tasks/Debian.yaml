@@ -1,0 +1,21 @@
+---
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+
+- name: Install core packages
+  ansible.builtin.apt:
+    name:
+      - zsh
+      - git
+      - tmux
+      - fzf
+      - restic
+      - fd-find
+      - bat
+      - stow
+      - unzip
+      - zoxide
+      - python3-passlib
+    state: present
