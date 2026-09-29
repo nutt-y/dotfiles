@@ -127,7 +127,13 @@ local diagnostic_goto = function(next, severity)
 
   severity = severity and vim.diagnostic.severity[severity] or nil
   return function()
-    vim.diagnostic.jump({ float = true, count = count, severity = severity })
+    vim.diagnostic.jump({
+      on_jump = function()
+        vim.diagnostic.open_float()
+      end,
+      count = count,
+      severity = severity,
+    })
   end
 end
 map("n", "<leader>cd", function()
