@@ -9,17 +9,17 @@ vim.o.guicursor = old_guicursor .. ",n-v-c:block-blinkon700-blinkoff400,i-ci-ve:
 vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
 
 -- Sign Column
-opt.relativenumber = true
-opt.number = true
-opt.ruler = false
-opt.sidescrolloff = 8
+vim.opt.relativenumber = true
+vim.opt.number = true
+vim.opt.ruler = false
+vim.opt.sidescrolloff = 8
 
 -- Fold
-opt.foldmethod = "indent"
-opt.foldtext = ""
+vim.opt.foldmethod = "indent"
+vim.opt.foldtext = ""
 
 -- Clipboard
-opt.clipboard:append(vim.env.SSH_TTY and "" or "unnamedplus") -- Sync with system clipboard
+vim.opt.clipboard:append(vim.env.SSH_TTY and "" or "unnamedplus") -- Sync with system clipboard
 g.clipboard = {
   name = "OSC 52",
   copy = {
@@ -33,22 +33,22 @@ g.clipboard = {
 }
 
 -- Editing
-opt.autowrite = true
-opt.expandtab = true -- Use spaces
-opt.jumpoptions = "view"
-opt.smartindent = true
-opt.shiftround = true
-opt.shiftwidth = 2
-opt.wrap = false
-opt.undofile = true
-opt.tabstop = 2
-opt.timeoutlen = 500
-opt.smoothscroll = true
-opt.autoindent = true
-opt.confirm = true
+vim.opt.autowrite = true
+vim.opt.expandtab = true -- Use spaces
+vim.opt.jumpoptions = "view"
+vim.opt.smartindent = true
+vim.opt.shiftround = true
+vim.opt.shiftwidth = 2
+vim.opt.wrap = false
+vim.opt.undofile = true
+vim.opt.tabstop = 2
+vim.opt.timeoutlen = 500
+vim.opt.smoothscroll = true
+vim.opt.autoindent = true
+vim.opt.confirm = true
 
 -- Buffer
-opt.fillchars = {
+vim.opt.fillchars = {
   foldopen = "",
   foldclose = "",
   fold = " ",
@@ -56,45 +56,45 @@ opt.fillchars = {
   diff = "╱",
   eob = " ",
 }
-opt.updatetime = 200
-opt.list = true -- Show some invisible characters
-opt.foldlevel = 99
-opt.scrolloff = 4
-opt.termguicolors = true
-opt.linebreak = true
-opt.spelllang = { "en" }
-opt.cursorline = false -- no cursorline
+vim.opt.updatetime = 200
+vim.opt.list = true -- Show some invisible characters
+vim.opt.foldlevel = 99
+vim.opt.scrolloff = 4
+vim.opt.termguicolors = true
+vim.opt.linebreak = true
+vim.opt.spelllang = { "en" }
+vim.opt.cursorline = false -- no cursorline
 
 -- Search
-opt.formatexpr = "v:lua.require'lazyvim.util'.format.formatexpr()"
-opt.formatoptions = "jcroqlnt" -- tcqj
-opt.grepformat = "%f:%l:%c:%m"
-opt.grepprg = "rg --vimgrep"
-opt.ignorecase = true -- Ignore case
-opt.smartcase = true -- If included mized case is search, then search sensitive
-opt.inccommand = "nosplit" -- preview incremental substitute
-opt.jumpoptions = "view"
+vim.opt.formatexpr = "v:lua.require'lazyvim.util'.format.formatexpr()"
+vim.opt.formatoptions = "jcroqlnt" -- tcqj
+vim.opt.grepformat = "%f:%l:%c:%m"
+vim.opt.grepprg = "rg --vimgrep"
+vim.opt.ignorecase = true -- Ignore case
+vim.opt.smartcase = true -- If included mized case is search, then search sensitive
+vim.opt.inccommand = "nosplit" -- preview incremental substitute
+vim.opt.jumpoptions = "view"
 
 -- Status Column
-opt.splitright = true -- Put new windows right of current
-opt.laststatus = 3
-opt.showmode = false
+vim.opt.splitright = true -- Put new windows right of current
+vim.opt.laststatus = 3
+vim.opt.showmode = false
 
 -- Misc
-opt.shortmess:append({ W = true, I = true, c = true, C = true })
+vim.opt.shortmess:append({ W = true, I = true, c = true, C = true })
 
 -- Windows
-opt.splitbelow = true -- Put new windows below current
-opt.splitkeep = "screen"
-opt.splitright = true -- Put new windows right of current
+vim.opt.splitbelow = true -- Put new windows below current
+vim.opt.splitkeep = "screen"
+vim.opt.splitright = true -- Put new windows right of current
 
 -- Copy/Paste
-local paste = function()
-  return {
-    vim.fn.split(vim.fn.getreg(""), "\n"),
-    vim.fn.getregtype(""),
-  }
-end
+-- local paste = function()
+--   return {
+--     vim.fn.split(vim.fn.getreg(""), "\n"),
+--     vim.fn.getregtype(""),
+--   }
+-- end
 
 -- Clipboard
 -- vim.g.clipboard = {
