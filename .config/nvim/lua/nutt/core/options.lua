@@ -8,12 +8,14 @@ vim.o.guicursor = old_guicursor .. ",n-v-c:block-blinkon700-blinkoff400,i-ci-ve:
 vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
 
 -- Sign Column
+vim.opt.relativenumber = true
 vim.opt.number = true
 vim.opt.ruler = false
 vim.opt.sidescrolloff = 8
 
 -- Fold
 vim.opt.foldmethod = "indent"
+vim.opt.foldtext = ""
 
 -- Clipboard
 vim.opt.clipboard:append(vim.env.SSH_TTY and "" or "unnamedplus") -- Sync with system clipboard
