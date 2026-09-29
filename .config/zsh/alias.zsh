@@ -1,3 +1,4 @@
 alias vim=nvim
 alias v=nvim
 alias fif="ssh -L 5173:localhost:5173 -L 5174:localhost:5174 -L 3000:localhost:3000 -L 8000:localhost:8000 -L 3002:localhost:3002 -L 8080:localhost:8080 fif"
+alias clear='clear && printf "\e[H\ec\e[${LINES}B"'
