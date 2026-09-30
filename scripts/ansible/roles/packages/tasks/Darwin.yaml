@@ -5,7 +5,7 @@
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
   args:
-    creates: "{{ '/opt/homebrew/bin/brew' if ansible_architecture == 'arm64' else '/usr/local/bin/brew' }}"
+    creates: "{{ '/opt/homebrew/bin/brew' if ansible_facts['architecture'] == 'arm64' else '/usr/local/bin/brew' }}"
   become: false
 
 - name: Update Homebrew

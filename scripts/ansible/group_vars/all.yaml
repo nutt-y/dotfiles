@@ -1,6 +1,6 @@
 ---
 user_name: "{{ lookup('env', 'USER_NAME') }}"
 user_password: "{{ lookup('env', 'PASSWORD') | password_hash('sha512') }}"
-home_dir: "{{ ('/Users' if ansible_system == 'Darwin' else '/home') ~ '/' ~ user_name }}"
-is_macos: "{{ ansible_system == 'Darwin' }}"
-zsh_path: "{{ '/bin/zsh' if ansible_system == 'Darwin' else '/usr/bin/zsh' }}"
+home_dir: "{{ ('/Users' if ansible_facts['system'] == 'Darwin' else '/home') ~ '/' ~ user_name }}"
+is_macos: "{{ ansible_facts['system'] == 'Darwin' }}"
+zsh_path: "{{ '/bin/zsh' if ansible_facts['system'] == 'Darwin' else '/usr/bin/zsh' }}"
