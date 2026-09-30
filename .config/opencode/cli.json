@@ -25,7 +25,7 @@
     "image_preview": true
   },
   "attention": {
-    "sound": true,
+    "sound": false,
     "notifications": true
   }
 }
