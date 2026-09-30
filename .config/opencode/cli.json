@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/v2/cli.json",
+  "theme": {
+    "name": "system"
+  },
+  "keybinds": {
+    "leader": "ctrl+o",
+    "app.exit": "ctrl+c,ctrl+d,<leader>q",
+    "session.page.up": "ctrl+b",
+    "session.page.down": "ctrl+f",
+    "session.half.page.up": "ctrl+u",
+    "session.half.page.down": "ctrl+d"
+  },
+  "diffs": {
+    "wrap": "word"
+  },
+  "session": {
+    "sidebar": "auto",
+    "scrollbar": false,
+    "thinking": "show"
+  },
+  "animations": true
+}
