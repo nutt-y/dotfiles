@@ -32,7 +32,7 @@
 - name: Install Opencode
   become_user: "{{ user_name }}"
   ansible.builtin.shell: |
-    cd /tmp && curl -fsSL https://opencode.ai/install | bash
+    cd /tmp && curl -fsSL https://opencode.ai/v2/install | bash
 
 - name: Install Spicetify Reminder
   ansible.builtin.debug:
