@@ -2,11 +2,15 @@
 - name: Generic Workstation Setup
   hosts: all
   gather_facts: true
-  become: "{{ ansible_system != 'Darwin' }}"
 
   roles:
-    - base
-    - packages
-    - shell
-    - tools
-    - dotfiles
+    - role: base
+      become: "{{ not is_macos }}"
+    - role: packages
+      become: "{{ not is_macos }}"
+    - role: shell
+      become: "{{ not is_macos }}"
+    - role: tools
+      become: "{{ not is_macos }}"
+    - role: dotfiles
+      become: "{{ not is_macos }}"
