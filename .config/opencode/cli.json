@@ -5,11 +5,35 @@
   },
   "keybinds": {
     "leader": "ctrl+o",
-    "app.exit": "ctrl+c,ctrl+d,<leader>q",
+    "app.exit": "ctrl+c,<leader>q",
+
     "session.page.up": "ctrl+b",
     "session.page.down": "ctrl+f",
     "session.half.page.up": "ctrl+u",
-    "session.half.page.down": "ctrl+d"
+    "session.half.page.down": "ctrl+d",
+
+    "input.move.left": "left",
+    "input.move.right": "right",
+    "input.delete": "delete,shift+delete",
+    "input.delete.to.line.start": "none",
+
+    "session.background": "none",
+    "session.delete": "<leader>d",
+    "queued_prompt.delete": "none",
+    "stash.delete": "none",
+    "composer.subagent.interrupt": "none",
+    "composer.shell.kill": "none",
+    "dialog.move_session.delete": "none",
+
+    "session.pin.toggle": "none",
+    "permission.prompt.fullscreen": "none",
+
+    "diff.page.up": "pageup",
+    "diff.page.down": "pagedown",
+    "diff.half_page.up": "none",
+
+    "queued_prompt.undo": "none",
+    "dialog.plugins.update": "none"
   },
   "diffs": {
     "wrap": "word"
@@ -25,7 +49,7 @@
     "image_preview": true
   },
   "attention": {
-    "sound": false,
+    "sound": true,
     "notifications": true
   }
 }
