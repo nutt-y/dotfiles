@@ -6,34 +6,39 @@
   "keybinds": {
     "leader": "ctrl+o",
     "app.exit": "ctrl+c,<leader>q",
-
+    // --- Page navigation: custom keys (V1 messages_* renamed to session.* in V2) ---
     "session.page.up": "ctrl+b",
     "session.page.down": "ctrl+f",
     "session.half.page.up": "ctrl+u",
     "session.half.page.down": "ctrl+d",
-
-    "input.move.left": "left",
-    "input.move.right": "right",
-    "input.delete": "delete,shift+delete",
-    "input.delete.to.line.start": "none",
-
-    "session.background": "none",
-    "session.delete": "<leader>d",
-    "queued_prompt.delete": "none",
-    "stash.delete": "none",
-    "composer.subagent.interrupt": "none",
-    "composer.shell.kill": "none",
-    "dialog.move_session.delete": "none",
-
-    "session.pin.toggle": "none",
-    "permission.prompt.fullscreen": "none",
-
-    "diff.page.up": "pageup",
-    "diff.page.down": "pagedown",
-    "diff.half_page.up": "none",
-
-    "queued_prompt.undo": "none",
-    "dialog.plugins.update": "none"
+    // --- Defaults below shared ctrl+b/f/u/d with the page bindings above, so they ---
+    // --- are freed here. "none" = command is still reachable from the command     ---
+    // --- palette (ctrl+p). Where a command had other keys, those are kept.        ---
+    // Freed ctrl+b
+    "input.move.left": "left", // was "left,ctrl+b"
+    "session.background": "none", // was "ctrl+b"
+    "diff.page.up": "pageup", // was "pageup,ctrl+b"
+    // Freed ctrl+f
+    "input.move.right": "right", // was "right,ctrl+f"
+    "session.pin.toggle": "none", // was "ctrl+f"
+    "permission.prompt.fullscreen": "none", // was "ctrl+f"
+    "diff.page.down": "pagedown", // was "pagedown,ctrl+f"
+    // Freed ctrl+u
+    "input.delete.to.line.start": "none", // was "ctrl+u"
+    "queued_prompt.undo": "none", // was "ctrl+u"
+    "diff.half_page.up": "none", // was "ctrl+u"
+    "dialog.plugins.update": "none", // was "ctrl+u"
+    // Freed ctrl+d (heavy trade-off: also drops ctrl+d as "delete char" in the prompt,
+    // session delete, stash delete, composer kill, etc.). To undo this group, set
+    // session.half.page.down back to its V2 default "ctrl+alt+d" and delete these entries.
+    "input.delete": "delete,shift+delete", // was "ctrl+d,delete,shift+delete"
+    "session.delete": "<leader>d", // was "ctrl+d"
+    "queued_prompt.delete": "none", // was "ctrl+d"
+    "stash.delete": "none", // was "ctrl+d"
+    "composer.subagent.interrupt": "none", // was "ctrl+d"
+    "composer.shell.kill": "none", // was "ctrl+d"
+    "dialog.move_session.delete": "none", // was "ctrl+d"
+    "session.last": "<leader>shift+g"
   },
   "diffs": {
     "wrap": "word"
