@@ -46,7 +46,7 @@
   "session": {
     "sidebar": "auto",
     "scrollbar": false,
-    "thinking": "show",
+    "thinking": "hide",
     "image_preview": true
   },
   "animations": true,
@@ -56,5 +56,8 @@
   "attention": {
     "sound": false,
     "notifications": true
+  },
+  "mini": {
+    "thinking": "hide"
   }
 }
