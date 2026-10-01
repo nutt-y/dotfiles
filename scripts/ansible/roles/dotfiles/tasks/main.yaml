@@ -22,7 +22,7 @@
   become: "{{ not is_macos }}"
   become_user: "{{ user_name }}"
   ansible.builtin.shell: |
-    cd {{ home_dir }}/dotfiles && stow .
+    cd {{ home_dir }}/dotfiles && {{ stow_path }} .
   args:
     chdir: "{{ home_dir }}/dotfiles"
   when: dotfiles_exists.stat.exists

@@ -6,7 +6,13 @@
   roles:
     - role: base
       become: "{{ not is_macos }}"
+    # Homebrew must already be installed. It is a prerequisite of the
+    # packages role, which installs Homebrew formulae.
     - role: packages
+      become: "{{ not is_macos }}"
+    # Now that Homebrew-provided zsh/stow exist, wire Homebrew into the
+    # login shell and record where its tools landed.
+    - role: homebrew
       become: "{{ not is_macos }}"
     - role: shell
       become: "{{ not is_macos }}"

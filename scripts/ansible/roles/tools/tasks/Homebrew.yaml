@@ -1,0 +1,63 @@
+---
+# Shared by macOS and Debian, both of which use Homebrew. Every tool below
+# has a formula, so nothing needs a curl installer here.
+- name: Install extra tools via Homebrew
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  community.general.homebrew:
+    name:
+      - lazygit
+      - yazi
+      - eza
+      - cmatrix
+      - duf
+      - lazydocker
+      - csvlens
+      - scooter
+      - bob
+      - opencode
+      - television
+      - gitlogue
+      - herdr
+    state: present
+
+# vicinae has no Homebrew formula, so each platform needs its own source.
+# macOS uses Raycast instead; Debian installs vicinae from its release tarball.
+- name: Install Raycast (macOS)
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  community.general.homebrew_cask:
+    name: raycast
+    state: present
+  when: is_macos and ansible_facts['architecture'] == 'arm64'
+
+- name: Install vicinae (Linux)
+  become: true
+  when: not is_macos and ansible_facts['architecture'] == 'x86_64'
+  block:
+    - name: Download vicinae tarball
+      ansible.builtin.get_url:
+        url: "https://github.com/vicinaehq/vicinae/releases/latest/download/vicinae-linux-x86_64-{{ vicinae_version }}.tar.gz"
+        dest: /tmp/vicinae.tar.gz
+        mode: "0644"
+
+    - name: Extract vicinae tarball
+      ansible.builtin.unarchive:
+        src: /tmp/vicinae.tar.gz
+        dest: /usr/local
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+
+- name: Warning if the launcher cannot be installed
+  ansible.builtin.debug:
+    msg: >-
+      {{ 'Raycast requires Apple Silicon; install it manually.' if is_macos
+         else 'vicinae has no ARM build; install the aarch64 AppImage manually.' }}
+  when: >
+    (is_macos and ansible_facts['architecture'] != 'arm64') or
+    (not is_macos and ansible_facts['architecture'] != 'x86_64')
+
+- name: Install Spicetify Reminder
+  ansible.builtin.debug:
+    msg: "Run: curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh"

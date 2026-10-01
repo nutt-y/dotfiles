@@ -3,4 +3,13 @@ user_name: "{{ lookup('env', 'USER_NAME') }}"
 user_password: "{{ lookup('env', 'PASSWORD') | password_hash('sha512') }}"
 home_dir: "{{ ('/Users' if ansible_facts['system'] == 'Darwin' else '/home') ~ '/' ~ user_name }}"
 is_macos: "{{ ansible_facts['system'] == 'Darwin' }}"
-zsh_path: "{{ '/bin/zsh' if ansible_facts['system'] == 'Darwin' else '/usr/bin/zsh' }}"
+# Fedora installs these from dnf; Homebrew hosts override them via the
+# homebrew role, which asks Homebrew where it put them.
+zsh_path: "{{ '/bin/zsh' if is_macos else '/usr/bin/zsh' }}"
+stow_path: "stow"
+
+# Release asset naming for x86_64 / aarch64 GitHub binaries (used for vicinae,
+# which has no Homebrew package on Linux).
+arch: "{{ 'x86_64' if ansible_facts['architecture'] == 'x86_64' else 'aarch64' }}"
+# Pinned so the vicinae asset filename in the download URL can be built.
+vicinae_version: "v0.29.1"

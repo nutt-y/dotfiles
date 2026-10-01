@@ -1,0 +1,26 @@
+---
+# Shared by macOS and Debian, both of which use Homebrew. Homebrew itself is
+# a prerequisite, set up by the homebrew role.
+- name: Update Homebrew
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  community.general.homebrew:
+    update_homebrew: true
+
+- name: Install core packages
+  become: "{{ not is_macos }}"
+  become_user: "{{ user_name }}"
+  community.general.homebrew:
+    name:
+      - zsh
+      - git
+      - tmux
+      - fzf
+      - restic
+      - fd
+      - bat
+      - stow
+      - unzip
+      - zoxide
+      - ansible
+    state: present

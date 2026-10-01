@@ -1,0 +1,60 @@
+---
+# Homebrew is a prerequisite on macOS and Debian: it must already be
+# installed and on PATH for the target user. The community.general.homebrew
+# module locates the `brew` binary itself, so no Homebrew prefix is
+# hard-coded anywhere in this role.
+#
+# This role makes Homebrew available to the user's interactive shells, and
+# records where Homebrew-provided tools live so later tasks can call them
+# without hard-coding any prefix. Fedora uses native dnf packages instead and
+# is skipped.
+
+- name: Configure Homebrew
+  when: ansible_facts['os_family'] != 'RedHat'
+  block:
+    - name: Add Homebrew to the login shell
+      become: "{{ not is_macos }}"
+      become_user: "{{ user_name }}"
+      ansible.builtin.lineinfile:
+        path: "{{ home_dir }}/.zprofile"
+        line: 'eval "$(brew shellenv)"'
+        create: true
+        mode: "0644"
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+
+    # Ask Homebrew itself where its tools are, rather than assuming a prefix.
+    - name: Resolve Homebrew zsh path
+      become: "{{ not is_macos }}"
+      become_user: "{{ user_name }}"
+      ansible.builtin.shell:
+        cmd: eval "$(brew shellenv)" && command -v zsh
+        executable: /bin/sh
+      register: brew_zsh_path
+      changed_when: false
+      failed_when: brew_zsh_path.stdout == ''
+
+    - name: Resolve Homebrew stow path
+      become: "{{ not is_macos }}"
+      become_user: "{{ user_name }}"
+      ansible.builtin.shell:
+        cmd: eval "$(brew shellenv)" && command -v stow
+        executable: /bin/sh
+      register: brew_stow_path
+      changed_when: false
+      failed_when: brew_stow_path.stdout == ''
+
+    # macOS already ships /bin/zsh in /etc/shells, so its default stands.
+    - name: Record Homebrew tool paths as facts
+      when: not is_macos
+      ansible.builtin.set_fact:
+        zsh_path: "{{ brew_zsh_path.stdout }}"
+        stow_path: "{{ brew_stow_path.stdout }}"
+
+    # chsh only accepts shells listed in /etc/shells.
+    - name: Register Homebrew zsh as a valid shell
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/shells
+        line: "{{ brew_zsh_path.stdout }}"
+      when: not is_macos

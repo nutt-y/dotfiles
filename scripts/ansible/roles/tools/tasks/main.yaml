@@ -1,3 +1,5 @@
 ---
+# macOS and Debian use Homebrew; Fedora keeps its native dnf/COPR tooling.
 - name: Include OS-specific tool tasks
-  ansible.builtin.include_tasks: "{{ 'darwin.yaml' if is_macos else 'linux.yaml' }}"
+  ansible.builtin.include_tasks:
+    file: "{{ 'RedHat.yaml' if ansible_facts['os_family'] == 'RedHat' else 'Homebrew.yaml' }}"

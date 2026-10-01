@@ -1,4 +1,19 @@
 ---
+# Fedora keeps its native dnf/COPR packages for lazygit, yazi, duf and
+# cmatrix (see the packages role); the tools below have no dnf package.
+- name: Install vicinae (Fedora)
+  block:
+    - name: Enable COPR for vicinae
+      community.general.copr:
+        state: enabled
+        name: quadratech188/vicinae
+
+    - name: Install vicinae package
+      ansible.builtin.dnf5:
+        name: vicinae
+        state: latest
+        update_cache: true
+
 - name: Neovim (Bob)
   block:
     - name: Install Bob (Neovim Manager)
@@ -25,7 +40,7 @@
 
 - name: Install eza
   ansible.builtin.shell: |
-    cd /tmp && curl -L https://github.com/eza-community/eza/releases/latest/download/eza_x86_64-unknown-linux-gnu.tar.gz | tar xz
+    cd /tmp && curl -L https://github.com/eza-community/eza/releases/latest/download/eza_{{ arch }}-unknown-linux-gnu.tar.gz | tar xz
     chmod +x eza
     mv eza /usr/local/bin/eza
 
@@ -44,13 +59,13 @@
 
 - name: Install CSV Lens
   ansible.builtin.shell: |
-    cd /tmp && curl -fsSL https://github.com/YS-L/csvlens/releases/download/v0.15.1/csvlens-x86_64-unknown-linux-gnu.tar.xz | tar -xJ --strip-components=1
+    cd /tmp && curl -fsSL https://github.com/YS-L/csvlens/releases/download/v0.15.1/csvlens-{{ arch }}-unknown-linux-gnu.tar.xz | tar -xJ --strip-components=1
     chmod +x csvlens
     mv csvlens /usr/local/bin/csvlens
 
 - name: Install Scooter
   ansible.builtin.shell: |
-    cd /tmp && curl -fsSL https://github.com/thomasschafer/scooter/releases/download/v0.9.0/scooter-v0.9.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf -
+    cd /tmp && curl -fsSL https://github.com/thomasschafer/scooter/releases/download/v0.9.0/scooter-v0.9.0-{{ arch }}-unknown-linux-musl.tar.gz | tar -xzf -
     chmod +x scooter
     mv scooter /usr/local/bin/scooter
 
