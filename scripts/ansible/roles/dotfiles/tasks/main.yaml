@@ -1,7 +1,10 @@
 ---
-- name: Check if SSH is available
-  ansible.builtin.command: ssh -V
-  register: ssh_check
+# GitHub returns exit code 1 on a successful SSH auth ("no shell access"),
+# so only that case is treated as usable; anything else falls back to HTTPS.
+- name: Check if GitHub is reachable over SSH
+  ansible.builtin.command: >-
+    ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 git@github.com
+  register: github_ssh_check
   failed_when: false
   changed_when: false
 
@@ -10,7 +13,7 @@
   become_user: "{{ user_name }}"
   ansible.builtin.git:
     repo: >-
-      {{ 'git@github.com:nutt-y/dotfiles.git' if ssh_check.rc == 0 else 'https://github.com/nutt-y/dotfiles' }}
+      {{ 'git@github.com:nutt-y/dotfiles.git' if github_ssh_check.rc == 1 else 'https://github.com/nutt-y/dotfiles' }}
     dest: "{{ home_dir }}/dotfiles"
 
 - name: Check if dotfiles directory exists

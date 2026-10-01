@@ -21,12 +21,11 @@ RUN git config --global user.name "dawg"
 # Setup environment
 RUN git clone https://github.com/nutt-y/dotfiles dotfiles
 
-# Remove ssh for a second just so that we can install dotfiles and everything through http
-RUN sudo mv /usr/bin/ssh /usr/bin/ssh.disabled && \
-  cd dotfiles/scripts/ansible && \
+# Run the playbook. The dotfiles role probes GitHub over SSH and falls back
+# to HTTPS on its own, so no ssh juggling is needed here.
+RUN cd dotfiles/scripts/ansible && \
   export USER_NAME=dawg PASSWORD=0000 && \
-  sudo -E ansible-playbook -i inventory.yaml setup.yaml --limit localhost && \
-  sudo mv /usr/bin/ssh.disabled /usr/bin/ssh
+  sudo -E ansible-playbook -i inventory.yaml setup.yaml --limit localhost
 
-# Setup bob
-RUN bob use stable && echo 'export PATH="/home/dawg/.local/share/bob/nvim-bin:$PATH"' >> /home/dawg/.zshrc
+# Setup bob (installed by the playbook under the user, not on PATH yet)
+RUN /home/dawg/.local/bin/bob use stable && echo 'export PATH="/home/dawg/.local/share/bob/nvim-bin:$PATH"' >> /home/dawg/.zshrc
