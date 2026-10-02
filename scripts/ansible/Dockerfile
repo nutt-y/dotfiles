@@ -27,5 +27,5 @@ RUN cd dotfiles/scripts/ansible && \
   export USER_NAME=dawg PASSWORD=0000 && \
   sudo -E ansible-playbook -i inventory.yaml setup.yaml --limit localhost
 
-# Setup bob (installed by the playbook under the user, not on PATH yet)
-RUN /home/dawg/.local/bin/bob use stable && echo 'export PATH="/home/dawg/.local/share/bob/nvim-bin:$PATH"' >> /home/dawg/.zshrc
+# Setup bob
+RUN bob use stable && echo 'export PATH="/home/dawg/.local/share/bob/nvim-bin:$PATH"' >> /home/dawg/.zshrc

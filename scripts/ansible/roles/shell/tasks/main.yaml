@@ -14,13 +14,6 @@
     executable: "{{ zsh_path }}"
     creates: "{{ home_dir }}/.local/share/zap"
 
-- name: Remove old .zshrc files
-  become: "{{ not is_macos }}"
-  become_user: "{{ user_name }}"
-  ansible.builtin.file:
-    path: "{{ home_dir }}/.zshrc"
-    state: absent
-
 - name: Install Tmux Plugin Manager
   become: "{{ not is_macos }}"
   become_user: "{{ user_name }}"
