@@ -110,9 +110,15 @@ map("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window W
 -- Clear search and stop snippet on escape
 map({ "i", "n", "s" }, "<esc>", function()
   vim.cmd("noh")
-  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("nvim.multicursor"), 0, -1)
   return "<esc>"
 end, { expr = true, desc = "Escape and Clear hlsearch" })
+
+-- Clear multi cursors
+map({ "n" }, "<C-[>", function()
+  local mc = vim.api.nvim_create_namespace("nvim.multicursor")
+
+  vim.api.nvim_buf_clear_namespace(0, mc, 0, -1)
+end, { desc = "Clear Multicursors" })
 
 -- Increment/Decrement Numbers
 map("n", "<leader>+", "<C-a>", { desc = "Increment Number" })
