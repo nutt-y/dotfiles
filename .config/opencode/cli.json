@@ -46,7 +46,7 @@
   "session": {
     "sidebar": "auto",
     "scrollbar": false,
-    "thinking": "hide",
+    "thinking": "show",
     "image_preview": true
   },
   "animations": true,
