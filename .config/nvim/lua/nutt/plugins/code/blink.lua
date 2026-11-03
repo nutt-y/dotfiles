@@ -71,6 +71,10 @@ return {
           },
         },
       },
+      signature = {
+        enabled = true,
+        window = { border = "rounded" },
+      },
       sources = {
         default = { "lsp", "path", "snippets", "buffer" },
         min_keyword_length = function()
@@ -80,6 +84,8 @@ return {
       keymap = {
         preset = "enter",
         ["<C-k>"] = { "show", "hide" },
+        ["<C-f>"] = { "scroll_documentation_down", "scroll_signature_down", "fallback" },
+        ["<C-b>"] = { "scroll_documentation_up", "scroll_signature_up", "fallback" },
         -- ["<Tab>"] = { "snippet_forward", "show", "hide", "fallback" },
       },
       cmdline = {

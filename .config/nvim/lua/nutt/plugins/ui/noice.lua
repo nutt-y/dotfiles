@@ -13,17 +13,17 @@ return {
       override = {
         ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
         ["vim.lsp.util.stylize_markdown"] = true,
-        ["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+      },
+      -- blink.cmp shows signature help (signature.enabled in blink.lua); without this
+      -- noice auto-opens its own signature popup at the same time
+      signature = {
+        enabled = false,
       },
     },
-    routes = {
-      {
-        filter = {
-          event = "notify",
-          find = "No information available",
-        },
-        opts = { skip = true },
-      },
+    -- Leave vim.notify to snacks.notifier (it filters "No information available").
+    -- Also keeps notifications out of nui popups, where the ml_get errors came from
+    notify = {
+      enabled = false,
     },
     -- you can enable a preset for easier configuration
     presets = {
