@@ -2,9 +2,6 @@
 ---@type LazySpec
 return {
   "esmuellert/codediff.nvim",
-  dependencies = {
-    "MunifTanjim/nui.nvim",
-  },
   cmd = "CodeDiff",
   opts = function()
     -- Disable cursor line on diff mode and tabline
