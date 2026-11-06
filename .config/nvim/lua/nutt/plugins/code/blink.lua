@@ -104,7 +104,7 @@ return {
           return {}
         end,
         keymap = {
-          preset = "enter",
+          preset = "default",
           ["<C-space>"] = {},
           ["<Tab>"] = { "show", "hide", "show_documentation", "hide_documentation" },
         },
