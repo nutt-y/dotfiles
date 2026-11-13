@@ -100,6 +100,104 @@ return {
             },
           },
           slash_commands = {
+            -- The built-in `/skills` is HTTP-only, so this picker hands the chosen skill to opencode.
+            -- opencode resolves skills by their directory name, not the frontmatter `name`, so that's the ID we send
+            skill = {
+              description = "Pick a skill for opencode to use",
+              ---@param chat CodeCompanion.Chat
+              callback = function(chat)
+                local files = require("codecompanion.utils.files")
+                local picker = require("codecompanion.providers.slash_commands.picker")
+
+                -- Later dirs take precedence, so a project skill overrides a personal one with the same ID
+                local skill_dirs = { "~/.config/.agents/skills", "~/.agents/skills", ".agents/skills" }
+
+                ---Pull a single-line value out of a SKILL.md's frontmatter
+                ---@param path string
+                ---@param key string
+                ---@return string|nil
+                local function frontmatter_value(path, key)
+                  local ok, lines = pcall(vim.fn.readfile, path, "", 30)
+                  if not ok or lines[1] ~= "---" then
+                    return nil
+                  end
+                  for i = 2, #lines do
+                    if lines[i] == "---" then
+                      return nil
+                    end
+                    local value = lines[i]:match("^" .. key .. ":%s*(.-)%s*$")
+                    if value then
+                      return (value:gsub("^[\"'](.*)[\"']$", "%1"))
+                    end
+                  end
+                end
+
+                ---@return CodeCompanion.SlashCommand.PickerItem[]
+                local function list_skills()
+                  local by_id = {}
+                  for _, configured in ipairs(skill_dirs) do
+                    local dir = vim.fs.abspath(vim.fs.normalize(configured))
+                    if vim.fn.isdirectory(dir) == 1 then
+                      local scan_opts = { patterns = "SKILL.md", max_depth = 5, follow = true, skip_hidden = true }
+                      for _, path in ipairs(files.scan_dir(dir, scan_opts)) do
+                        local id = vim.fs.basename(vim.fs.dirname(path))
+                        by_id[id] = {
+                          name = id,
+                          description = frontmatter_value(path, "description") or "",
+                          path = path,
+                        }
+                      end
+                    end
+                  end
+
+                  local skills = vim.tbl_values(by_id)
+                  table.sort(skills, function(a, b)
+                    return a.name < b.name
+                  end)
+                  return skills
+                end
+
+                -- A minimal slash command object, so the built-in pickers (and their previews) can drive it
+                local slash_command = {
+                  Chat = chat,
+                  config = { opts = { provider = require("codecompanion.providers").pickers } },
+                }
+
+                ---Attach the skill to the next message, which is when opencode sees it
+                ---@param selected CodeCompanion.SlashCommand.PickerItem
+                function slash_command:output(selected)
+                  if not selected then
+                    return
+                  end
+
+                  local id = "<skill>" .. selected.name .. "</skill>"
+                  if require("codecompanion.interactions.chat.helpers").has_context(id, self.Chat.messages) then
+                    return
+                  end
+
+                  self.Chat:add_context({
+                    role = "user",
+                    content = (
+                      "Use the `%s` skill for this request: load it with the skill tool and follow its instructions."
+                    ):format(selected.name),
+                  }, { source = "skill", id = id, path = selected.path })
+                end
+
+                local providers = picker.build_list_pickers({
+                  prompt = "Select a skill",
+                  empty_message = "No skills found",
+                  preview = true,
+                  items = list_skills,
+                })
+
+                require("codecompanion.interactions.chat.slash_commands")
+                  .new()
+                  :set_provider(slash_command, providers)
+              end,
+              opts = {
+                contains_code = false,
+              },
+            },
             acp_session_options = {
               keymaps = {
                 modes = { n = "<leader>as" },
