@@ -86,6 +86,18 @@ return {
               },
               description = "Change adapter and model",
             },
+            next_chat = {
+              modes = {
+                n = "<leader>a}",
+              },
+              description = "Open the next chat",
+            },
+            previous_chat = {
+              modes = {
+                n = "<leader>a{",
+              },
+              description = "Open the previous chat",
+            },
           },
           slash_commands = {
             acp_session_options = {
