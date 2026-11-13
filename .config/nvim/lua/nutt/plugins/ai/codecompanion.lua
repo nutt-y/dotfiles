@@ -8,7 +8,48 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
-    config = true,
+    config = function(_, opts)
+      require("codecompanion").setup(opts)
+
+      -- Connect to opencode when a chat opens, but only create the session on the first
+      -- message, so empty chats never end up in opencode's session history
+      local helper_utils = require("codecompanion.interactions.chat.helpers")
+
+      ---@diagnostic disable-next-line: duplicate-set-field
+      helper_utils.create_acp_connection = function(chat, cb)
+        require("codecompanion.utils.async").sync(function()
+          local ACPHandler = require("codecompanion.interactions.chat.acp.handler")
+          ACPHandler.new(chat):ensure_connection()
+          if cb then
+            vim.schedule(cb)
+          end
+        end)()
+      end
+
+      -- Closing a chat also deletes its opencode session, so closed chats don't stay on disk
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "CodeCompanionChatClosed",
+        group = vim.api.nvim_create_augroup("nutt.codecompanion.delete_session", { clear = true }),
+        callback = function(ev)
+          local chat = require("codecompanion").buf_get_chat(ev.data.bufnr)
+          local session_id = chat and chat.acp_connection and chat.acp_connection.session_id
+          if not session_id then
+            return -- nothing was ever sent, so no session exists
+          end
+
+          vim.system({ "opencode", "session", "delete", session_id }, { text = true }, function(result)
+            if result.code ~= 0 then
+              vim.schedule(function()
+                vim.notify(
+                  ("Failed to delete opencode session %s:\n%s"):format(session_id, result.stderr or ""),
+                  vim.log.levels.WARN
+                )
+              end)
+            end
+          end)
+        end,
+      })
+    end,
     ---@module "codecompanion"
     opts = {
       interactions = {
@@ -41,17 +82,12 @@ return {
             },
             change_adapter = {
               modes = {
-                n = "<leader>am",
+                n = "<leader>ai",
               },
               description = "Change adapter and model",
             },
           },
           slash_commands = {
-            resume = {
-              keymaps = {
-                modes = { n = "<leader>al" },
-              },
-            },
             acp_session_options = {
               keymaps = {
                 modes = { n = "<leader>as" },
@@ -69,7 +105,7 @@ return {
             opencode = {
               defaults = {
                 session_config_options = {
-                  model = "opencode/claude-opus-5-5",
+                  model = "claude-agent/opus",
                   mode = "plan",
                 },
               },
@@ -82,15 +118,19 @@ return {
           provider = "default",
         },
         chat = {
+          input = {
+            layout = "split",
+            height = 10,
+          },
           window = {
             layout = "vertical",
-            position = "left",
+            position = "right",
           },
           intro_message = "Start The Chat! Press ? for options",
           show_settings = false,
           show_token_count = true,
           show_context = true,
-          show_reasoning = true,
+          show_reasoning = false,
         },
       },
     },
@@ -101,7 +141,56 @@ return {
         function()
           require("codecompanion").toggle()
         end,
-        desc = "Open a new chat buffer",
+        desc = "Toggle Chat Buffer",
+      },
+      {
+        "<leader>an",
+        mode = { "n" },
+        function()
+          require("codecompanion").chat()
+        end,
+        desc = "Open a new chat",
+      },
+      {
+        "<leader>al",
+        mode = { "n" },
+        function()
+          local cc = require("codecompanion")
+          local config = require("codecompanion.config")
+          local slash_commands = require("codecompanion.interactions.chat.slash_commands")
+
+          local function resume(chat)
+            slash_commands.run({
+              label = "resume",
+              config = config.interactions.chat.slash_commands.resume,
+            }, chat)
+          end
+
+          -- Reuse the last chat if nothing has been sent in it yet
+          local chat = cc.last_chat()
+          if chat and chat.cycle <= 1 and chat.acp_connection and chat.acp_connection:is_ready() then
+            if not chat.ui:is_visible() then
+              chat.ui:open()
+            end
+            return resume(chat)
+          end
+
+          -- Otherwise open a fresh chat (this hides the current one) and resume once it's connected
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "CodeCompanionACPConnected",
+            once = true,
+            callback = function(ev)
+              vim.schedule(function()
+                local new_chat = cc.buf_get_chat(ev.data.bufnr)
+                if new_chat then
+                  resume(new_chat)
+                end
+              end)
+            end,
+          })
+          cc.chat()
+        end,
+        desc = "Switch opencode session",
       },
       {
         "<leader>ap",
@@ -116,6 +205,27 @@ return {
         mode = { "x" },
         "<cmd>CodeCompanionChat Add<cr>",
         desc = "Paste the selected into the latest AI Chat",
+      },
+      {
+        "<leader>am",
+        mode = { "n" },
+        function()
+          vim.system({ "opencode", "mcp", "list" }, { text = true }, function(result)
+            -- Strip ANSI colour codes and trailing whitespace from the CLI output
+            local output = (result.stdout or "") .. (result.stderr or "")
+            output = output:gsub("\27%[[%d;]*%a", ""):gsub("%s+$", "")
+
+            vim.schedule(function()
+              vim.lsp.util.open_floating_preview(vim.split(output, "\n"), "text", {
+                border = "rounded",
+                title = " MCP Servers ",
+                title_pos = "center",
+                focus_id = "opencode_mcp_list",
+              })
+            end)
+          end)
+        end,
+        desc = "List opencode MCP servers",
       },
     },
   },
