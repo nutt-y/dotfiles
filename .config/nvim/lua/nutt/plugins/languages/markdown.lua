@@ -64,6 +64,21 @@ return {
     "OXY2DEV/markview.nvim",
     lazy = true,
     ft = { "markdown" },
+    keys = {
+      {
+        "<leader>uw",
+        function()
+          vim.wo.wrap = not vim.wo.wrap
+
+          -- markview doesn't redraw on option changes, so tables stay stale otherwise
+          local buf = vim.api.nvim_get_current_buf()
+          if require("markview.state").buf_attached(buf) then
+            require("markview.actions").render(buf)
+          end
+        end,
+        desc = "Toggle line wrap",
+      },
+    },
     opts = {
       preview = {
         filetypes = { "markdown", "md" },

@@ -95,9 +95,6 @@ map("n", "<leader>uI", function()
   vim.treesitter.inspect_tree()
   vim.api.nvim_input("I")
 end, { desc = "Inspect Tree" })
-map("n", "<leader>uw", function()
-  vim.wo.wrap = not vim.wo.wrap
-end, { desc = "Toggle line wrap" })
 
 -- windows
 map("n", "<leader>-", "<C-W>s", { desc = "Split Window Below", remap = true })
