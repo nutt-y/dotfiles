@@ -1,0 +1,67 @@
+[appearance]
+theme = "none"  # use the terminal's own colours
+# tmux: set -g repeat-time 1000
+prefix_repeat_time = 1000
+# Terminal-mode focus keys move through Neovim splits first (needs tuios-nvim-navigator)
+nvim_navigation = true
+border_style = "rounded"
+pane_overlays = true
+window_title_position = "top"
+window_title_style = "pill"
+
+[startup]
+tiled = true
+daemon = true
+
+# Mirrors ~/.config/tmux/commons.conf on top of the built-in tmux preset.
+# Note: a tmux "window" is a tuios workspace, a tmux "pane" is a tuios window.
+[keybindings]
+preset = "tmux"
+# tmux: set -g prefix C-Space  (press it twice to send it to the pane)
+leader_key = "ctrl+space"
+
+[keybindings.prefix_mode]
+# tmux: bind | split-window -h / bind - split-window -v  (cwd is inherited by default)
+split_vertical = ["|"]
+split_horizontal = ["-"]
+
+# tmux: bind r source-file ~/.tmux.conf
+reload_config = ["r"]
+
+# tmux: bind -r m resize-pane -Z
+toggle_zoom = ["m", "z"]
+
+# tmux: bind -r <arrow> resize-pane -<dir> 5
+resize_pane_left_5 = ["left"]
+resize_pane_down_5 = ["down"]
+resize_pane_up_5 = ["up"]
+resize_pane_right_5 = ["right"]
+
+# tmux: bind -r n next-window / bind -r p previous-window
+next_workspace = ["n"]
+prev_workspace = ["p"]
+
+# tmux: bind h/j/k/l select-pane
+terminal_focus_left = ["h"]
+terminal_focus_down = ["j"]
+terminal_focus_up = ["k"]
+terminal_focus_right = ["l"]
+
+# tmux-sessionx: set -g @sessionx-bind '/'
+choose_tree = ["/"]
+
+# Sidebar: e toggles it (swapped with the default b, which now focuses/leaves it)
+prefix_toggle_sidebar = ["e"]
+prefix_explore = ["E"]
+
+# Floating scratch terminal on t (like tmux-floax); the window menu moves to g
+toggle_scratch = ["t"]
+prefix_window = ["g"]
+
+# vim-tmux-navigator: C-h/j/k/l move across Neovim splits and tuios panes
+# (with appearance.nvim_navigation + tuios-nvim-navigator using the same keys)
+[keybindings.terminal_mode]
+terminal_focus_left = ["ctrl+h"]
+terminal_focus_down = ["ctrl+j"]
+terminal_focus_up = ["ctrl+k"]
+terminal_focus_right = ["ctrl+l"]

@@ -19,17 +19,21 @@ vim.opt.foldtext = ""
 
 -- Clipboard
 vim.opt.clipboard:append(vim.env.SSH_TTY and "" or "unnamedplus") -- Sync with system clipboard
-g.clipboard = {
-  name = "OSC 52",
-  copy = {
-    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-  },
-  paste = {
-    ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-  },
-}
+-- OSC 52 only over SSH. Locally Neovim picks pbcopy/pbpaste itself; tuios
+-- answers OSC 52 paste queries with nothing, so OSC 52 paste breaks there.
+if vim.env.SSH_TTY then
+  g.clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+    },
+    paste = {
+      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+    },
+  }
+end
 
 -- Editing
 vim.opt.autowrite = true
