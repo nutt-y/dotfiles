@@ -49,11 +49,11 @@ resize_pane_right_5 = ["right"]
 
 # tmux: bind -r n next-window / bind -r p previous-window
 next_workspace = ["n"]
-prev_workspace = ["N"]
+prev_workspace = ["p"]
 prefix_last_message = []  # N is previous workspace now
 
 # Command palette on p (ctrl+p is handed back to shells/vim, see [keybindings.global])
-command_palette = ["p", ":"]
+command_palette = [":"]
 
 # tmux: bind h/j/k/l select-pane
 terminal_focus_left = ["h"]
