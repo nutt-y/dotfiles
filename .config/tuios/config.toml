@@ -42,10 +42,10 @@ reload_config = ["r"]
 toggle_zoom = ["m", "z"]
 
 # tmux: bind -r <arrow> resize-pane -<dir> 5
-resize_pane_left_5 = ["left"]
-resize_pane_down_5 = ["down"]
-resize_pane_up_5 = ["up"]
-resize_pane_right_5 = ["right"]
+resize_pane_left_5 = ["right"]
+resize_pane_down_5 = ["up"]
+resize_pane_up_5 = ["down"]
+resize_pane_right_5 = ["left"]
 
 # tmux: bind -r n next-window / bind -r p previous-window
 next_workspace = ["n"]
