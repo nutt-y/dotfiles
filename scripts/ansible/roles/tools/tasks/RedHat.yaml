@@ -78,3 +78,7 @@
     curl -fsSL https://herdr.dev/install.sh | sh
   environment:
     HERDR_INSTALL_DIR: /usr/local/bin
+
+- name: Install Tuios
+  ansible.builtin.shell: |
+    curl -fsSL https://raw.githubusercontent.com/Gaurav-Gosain/tuios/main/install.sh | bash

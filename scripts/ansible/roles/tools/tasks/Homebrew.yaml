@@ -19,6 +19,7 @@
       - television
       - gitlogue
       - herdr
+      - tuios
     state: present
 
 # vicinae has no Homebrew formula, so each platform needs its own source.
