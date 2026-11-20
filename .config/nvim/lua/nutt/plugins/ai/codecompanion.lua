@@ -1,3 +1,7 @@
+if true then
+  return {}
+end
+
 ---@module "lazy"
 ---@type LazySpec
 return {
@@ -177,9 +181,9 @@ return {
 
                   self.Chat:add_context({
                     role = "user",
-                    content = (
-                      "Use the `%s` skill for this request: load it with the skill tool and follow its instructions."
-                    ):format(selected.name),
+                    content = ("Use the `%s` skill for this request: load it with the skill tool and follow its instructions."):format(
+                      selected.name
+                    ),
                   }, { source = "skill", id = id, path = selected.path })
                 end
 
@@ -190,9 +194,7 @@ return {
                   items = list_skills,
                 })
 
-                require("codecompanion.interactions.chat.slash_commands")
-                  .new()
-                  :set_provider(slash_command, providers)
+                require("codecompanion.interactions.chat.slash_commands").new():set_provider(slash_command, providers)
               end,
               opts = {
                 contains_code = false,
