@@ -1,86 +1,90 @@
 onboarding = false
-[keys]
-prefix = "ctrl+space"
 
-# Splits (tmux used | and -)
-split_vertical = "prefix+|"
-split_horizontal = "prefix+minus"
-
-# Tab Cycling
-next_tab = "prefix+n"
-previous_tab = "prefix+p"
-
-# Close tab
-# close_tab = ""
-# [[keys.command]]
-# key = "prefix+x"
-# type = "popup"
-# command = "bash -c 'read -p \"Close tab? (y/n) \" confirm; if [ \"$confirm\" = \"y\" ]; then herdr tab close; fi'"
-# description = "close tab with confirmation"
-# width = "30%"
-
-# Zoom (tmux used m)
-zoom = "prefix+m"
-
-# Detach from the session
-detach = "prefix+d"
-
-# Reload config
-reload_config = "prefix+r"
-
-# Resize mode (tmux had direct arrows, herdr uses a mode)
-resize_mode = "prefix+shift+r"
-
-# Pane close
-close_pane = "prefix+x"
-
-# Close sidetab
-toggle_sidebar = "prefix+e"
-
-# Edit scrollback
-edit_scrollback = "prefix+shift+="
-
-# focus agent sidebar
-next_agent = "prefix+a"
-previous_agent = "prefix+s"
-
-# Create new tab
-new_tab = "prefix+c"
-rename_tab = "prefix+,"
+# Mirrors ~/.tmux.conf + ~/.config/tmux/commons.conf and the tuios config.
+# tmux "window" = herdr tab, tmux "pane" = herdr pane, tuios "workspace" = herdr tab group.
 
 [theme]
-name = "terminal"
+name = "terminal"  # use the terminal's own colours (tuios: theme = "none")
 
-# UI
+[terminal]
+new_cwd = "follow"  # tmux: split-window -c "#{pane_current_path}"
 
-
-# Vim Navigation
-[[keys.command]]
-key = "ctrl+h"
-type = "plugin_action"
-command = "vim-herdr-navigation.left"
-description = "navigate left (vim/herdr)"
-
-[[keys.command]]
-key = "ctrl+j"
-type = "plugin_action"
-command = "vim-herdr-navigation.down"
-description = "navigate down (vim/herdr)"
-
-[[keys.command]]
-key = "ctrl+k"
-type = "plugin_action"
-command = "vim-herdr-navigation.up"
-description = "navigate up (vim/herdr)"
-
-[[keys.command]]
-key = "ctrl+l"
-type = "plugin_action"
-command = "vim-herdr-navigation.right"
-description = "navigate right (vim/herdr)"
+[ui]
+tab_bar_position = "top"  # tmux: set -g status-position top
+mouse_capture = true      # tmux: set -g mouse on
+# tmux unbinds the mouse-drag copy (unbind -T copy-mode-vi MouseDragEnd1Pane)
+copy_on_select = false
+# tmux new-window creates immediately; no name prompt
+prompt_new_tab_name = false
+# tuios: border_style = "rounded"; tmux: pane-border-lines "double"
+pane_borders = "auto"
 
 [ui.toast]
 delivery = "herdr"
 
 [ui.toast.herdr]
 position = "bottom-right"
+
+[keys]
+prefix = "ctrl+space"  # tmux: set -g prefix C-Space; tuios: leader_key
+
+# Splits (tmux: bind | and bind -)
+split_vertical = "prefix+|"
+split_horizontal = "prefix+minus"
+
+# Windows / tabs (tmux: bind n / bind p / bind c / bind , ; base-index 1)
+next_tab = "prefix+n"
+previous_tab = "prefix+p"
+new_tab = "prefix+c"
+rename_tab = "prefix+,"
+
+# Pane focus (tmux: bind h/j/k/l select-pane)
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+
+# Resize (tmux: bind -r <arrow> resize-pane -<dir> 5)
+resize_pane_left = "prefix+left"
+resize_pane_down = "prefix+down"
+resize_pane_up = "prefix+up"
+resize_pane_right = "prefix+right"
+
+# Zoom (tmux: bind -r m resize-pane -Z; tuios toggle_zoom)
+zoom = "prefix+m"
+
+# Close / detach / reload (tmux: bind-x default, detach prefix+d, bind r source-file)
+close_pane = "prefix+x"
+detach = "prefix+d"
+reload_config = "prefix+r"
+resize_mode = "prefix+shift+r"
+
+# Sidebar and agents (tuios: prefix_toggle_sidebar e)
+toggle_sidebar = "prefix+e"
+next_agent = "prefix+a"
+previous_agent = "prefix+s"
+
+# Tree / goto (tuios: choose_tree "/", prefix_window g)
+workspace_picker = "prefix+/"
+goto = "prefix+g"
+
+edit_scrollback = "prefix+shift+="
+
+# Floating scratch terminal on t (tuios: toggle_scratch t)
+[[keys.command]]
+key = "prefix+t"
+type = "popup"
+command = "zsh"
+width = "80%"
+height = "80%"
+description = "scratch terminal"
+
+[server]
+headless_cols = 120
+headless_rows = 40
+
+[session]
+resume_agents_on_restore = true  # tuios: startup daemon = true; agents resume after restart
+
+[update]
+channel = "stable"
