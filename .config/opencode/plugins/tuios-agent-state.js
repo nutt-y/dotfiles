@@ -1,0 +1,471 @@
+// installed by tuios
+// managed by tuios; `tuios integration install opencode` overwrites this file
+// and `tuios integration uninstall opencode` removes it. Put your own plugins
+// beside it instead of editing it.
+// TUIOS_INTEGRATION_ID=opencode
+// TUIOS_INTEGRATION_VERSION=7
+//
+// Reports opencode's session state to the tuios pane it runs in, through
+// the daemon's agent-hook-event verb on its socket, or `tuios agent-hook
+// opencode` where the daemon has no such verb. The event names are opencode's bus events
+// (https://opencode.ai/docs/plugins/), handled the way herdr's plugin handles
+// them. Events from child sessions, the subagents opencode starts, are dropped
+// so a subagent finishing cannot mark the pane done mid-turn.
+//
+// A permission request is also offered to the tuios Inbox. The hook prints a
+// reply only when [agents.approvals] in the tuios config names this harness and
+// the person answered it there; this plugin then sends that reply to opencode.
+// It names the tool call the request is about, so the Inbox can show it, and
+// the Inbox only offers a request whose call it can show whole.
+// When the hook prints nothing, which is every other case, nothing is sent and
+// opencode's own prompt stands.
+//
+// The model and the session's cost so far go to the pane's agent metadata
+// through `tuios agent-statusline opencode`, from the assistant messages
+// opencode updates: each message's modelID, and the sum of their cost. It runs
+// only when the model or the cost to the cent changed, and once more when the
+// turn ends, so the turn's last cost is not held back.
+//
+// The end of a turn is session.status idle. opencode's schema marks the older
+// session.idle event deprecated; it is still forwarded while opencode sends
+// it, and the hook takes whichever of the two comes first.
+
+import { spawn } from "node:child_process";
+
+// hookViaSocket sends one hook event to the tuios daemon over its socket, as
+// the agent-hook-event verb, so no tuios process starts for it. The daemon
+// finds the pane from this process, as `tuios agent-hook` finds it from its
+// own. It resolves to what the hook prints for the harness to read (a string,
+// often empty, and empty when signal aborts the call), or to null when the
+// event has to go through `tuios agent-hook` instead: no socket in the
+// environment, a socket that cannot be reached, or a daemon older than the
+// verb. The two last are remembered, so
+// the events after them go to the process at once. A call that reached the
+// daemon is never sent again, so an event is never reported twice.
+import { connect as tuiosConnect } from "node:net";
+
+// The variables the hook mapping reads, as tuios integration writes them.
+const TUIOS_HOOK_ENV = ["TUIOS_AGENT","CODEX_THREAD_ID","CURSOR_VERSION","GROK_SESSION_ID","CRUSH_SESSION_ID"];
+let tuiosSocketOff = !process.env.TUIOS_SOCKET;
+
+// verb is agent-hook-event unless named (agent-statusline-event for a status
+// line run), and extra holds that verb's own params.
+function hookViaSocket(harness, payload, limitMs, signal, verb = "agent-hook-event", extra = {}) {
+  if (tuiosSocketOff) return Promise.resolve(null);
+  if (signal?.aborted) return Promise.resolve("");
+  return new Promise((resolve) => {
+    let settled = false;
+    let connected = false;
+    let buf = "";
+    let sock = null;
+    let timer = null;
+    const done = (value) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+      try {
+        sock?.destroy();
+      } catch {}
+      resolve(value);
+    };
+    // An abort ends the call with nothing printed; the daemon ends the hold
+    // when it sees the connection go.
+    const abort = () => done("");
+    signal?.addEventListener("abort", abort, { once: true });
+    const env = {};
+    for (const name of TUIOS_HOOK_ENV) {
+      if (process.env[name]) env[name] = process.env[name];
+    }
+    try {
+      sock = tuiosConnect(process.env.TUIOS_SOCKET);
+    } catch {
+      tuiosSocketOff = true;
+      done(null);
+      return;
+    }
+    // Past the limit nothing is printed, as when the hook process gives up.
+    timer = setTimeout(() => done(connected ? "" : null), limitMs);
+    sock.setEncoding("utf8");
+    sock.on("connect", () => {
+      connected = true;
+      sock.write(JSON.stringify({ id: 1, verb, params: { ...extra, harness, payload, env } }) + "\n");
+    });
+    sock.on("data", (chunk) => {
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl < 0) {
+        if (buf.length > 1 << 20) done("");
+        return;
+      }
+      let msg = null;
+      try {
+        msg = JSON.parse(buf.slice(0, nl));
+      } catch {
+        done("");
+        return;
+      }
+      if (msg && msg.error) {
+        if (msg.error.code === "unknown_verb") {
+          tuiosSocketOff = true;
+          done(null);
+          return;
+        }
+        done("");
+        return;
+      }
+      const out = msg && msg.result ? msg.result.stdout : "";
+      done(typeof out === "string" ? out : "");
+    });
+    sock.on("error", () => {
+      if (!connected) tuiosSocketOff = true;
+      done(connected ? "" : null);
+    });
+    sock.on("close", () => done(connected ? "" : null));
+  });
+}
+
+
+const TUIOS = "tuios";
+const ARGS = ["agent-hook", "opencode", "--integration", "7"];
+// The daemon ends a hold within 300 seconds; this only guards against a hook
+// that never exits.
+const HOLD_LIMIT_MS = 310000;
+const REPLIES = ["once", "always", "reject"];
+const children = new Set();
+// calls maps a tool call id to its tool and arguments, from
+// tool.execute.before, so a permission request can say which call it is about.
+// The Inbox only offers a request whose call it can show whole.
+const calls = new Map();
+const CALLS_MAX = 256;
+const STATUS_ARGS = ["agent-statusline", "opencode", "--integration", "7"];
+// usage maps a session id to its assistant messages' cost by message id, the
+// model last named, and what was last sent.
+const usage = new Map();
+const USAGE_MAX = 64;
+// ended holds the sessions whose turn end was already sent, so a turn's end
+// sends the usage once although opencode announces it with two events. A
+// busy or retry status starts the next turn.
+const ended = new Set();
+
+function remember(callID, tool, args) {
+  if (!callID || !tool) return;
+  calls.set(callID, { tool, args: args && typeof args === "object" ? args : {} });
+  while (calls.size > CALLS_MAX) {
+    calls.delete(calls.keys().next().value);
+  }
+}
+
+function payloadFor(event, sessionID, extra) {
+  return JSON.stringify({
+    hook_event_name: event,
+    session_id: sessionID || "",
+    ...extra,
+  });
+}
+
+function report(event, sessionID, extra) {
+  const payload = payloadFor(event, sessionID, extra);
+  after(() =>
+    hookViaSocket("opencode", payload, REPORT_LIMIT_MS).then((out) => {
+      if (out === null) return spawnOnce(ARGS, payload);
+    }),
+  );
+}
+
+// Reports leave one at a time, in the order of their events: each starts when
+// the one before has exited. Two hook processes started together race to the
+// daemon, and the later event can land first. A session.created that lost to
+// the busy status after it left a working pane idle, and an idle status that
+// lost to the next busy one left a finished pane working.
+let sending = Promise.resolve();
+// A report that has not exited by then is ended, so one stuck hook cannot
+// hold back every report after it.
+const REPORT_LIMIT_MS = 5000;
+
+// after runs start once every report queued before it has been sent.
+function after(start) {
+  sending = sending.then(start).catch(() => {});
+}
+
+// spawnOnce runs tuios with args and input on its stdin, and resolves when it
+// has exited.
+function spawnOnce(args, input) {
+  return new Promise((resolve) => {
+    try {
+      const child = spawn(TUIOS, args, {
+        stdio: ["pipe", "ignore", "ignore"],
+        windowsHide: true,
+        timeout: REPORT_LIMIT_MS,
+      });
+      child.on("error", resolve);
+      child.on("close", resolve);
+      child.stdin.on("error", () => {});
+      child.stdin.end(input);
+    } catch {
+      // A report that cannot be sent must never break opencode.
+      resolve();
+    }
+  });
+}
+
+// noteUsage takes an assistant message's model and cost.
+function noteUsage(info) {
+  const sessionID = text(info.sessionID);
+  if (!sessionID || children.has(sessionID)) return;
+  let u = usage.get(sessionID);
+  if (!u) {
+    u = { costs: new Map(), model: "", sent: "" };
+    usage.set(sessionID, u);
+    while (usage.size > USAGE_MAX) {
+      usage.delete(usage.keys().next().value);
+    }
+  }
+  const id = text(info.id);
+  if (id && typeof info.cost === "number" && Number.isFinite(info.cost) && info.cost >= 0) {
+    u.costs.set(id, info.cost);
+  }
+  if (text(info.modelID)) u.model = text(info.modelID);
+  sendUsage(sessionID, false);
+}
+
+// sendUsage runs the status line feed for a session when what it would say
+// changed, or at the end of a turn.
+function sendUsage(sessionID, turnEnd) {
+  const u = usage.get(sessionID);
+  if (!u) return;
+  const payload = { session_id: sessionID };
+  if (u.model) payload.modelID = u.model;
+  if (u.costs.size > 0) {
+    let cost = 0;
+    for (const c of u.costs.values()) cost += c;
+    payload.cost = cost;
+  }
+  const key = (payload.modelID || "") + "|" + (payload.cost === undefined ? "" : payload.cost.toFixed(2));
+  if (!turnEnd && key === u.sent) return;
+  if (key === "|") return;
+  u.sent = key;
+  const input = JSON.stringify(payload);
+  const args = turnEnd ? [...STATUS_ARGS, "--turn-end"] : STATUS_ARGS;
+  after(() =>
+    hookViaSocket("opencode", input, REPORT_LIMIT_MS, undefined, "agent-statusline-event", turnEnd ? { turn_end: true } : {}).then((out) => {
+      if (out === null) return spawnOnce(args, input);
+    }),
+  );
+}
+
+// ask runs the hook for a permission request and resolves to the reply it
+// printed, or null for anything else: no output, output that is not a reply,
+// an error, or a hook that outlived HOLD_LIMIT_MS.
+function ask(event, sessionID, extra, signal) {
+  return new Promise((resolve) => {
+    let out = "";
+    let settled = false;
+    let timer = null;
+    const done = (value) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+      resolve(value);
+    };
+    let child;
+    const abort = () => {
+      try { child?.kill(); } catch {}
+      done(null);
+    };
+    if (signal?.aborted) {
+      done(null);
+      return;
+    }
+    signal?.addEventListener("abort", abort, { once: true });
+    // The request goes out after the reports before it, so it cannot land
+    // ahead of the busy status of its own turn. The reports after it do not
+    // wait for the person's answer: they wait only for its start.
+    const payload = payloadFor(event, sessionID, extra);
+    const parse = (text) => {
+      try {
+        const value = JSON.parse(text.trim());
+        if (value && REPLIES.includes(value.reply)) {
+          done(value);
+          return;
+        }
+      } catch {}
+      done(null);
+    };
+    after(() => {
+      if (settled) return;
+      // Not returned: the reports after this one wait only for its start.
+      hookViaSocket("opencode", payload, HOLD_LIMIT_MS, signal).then((printed) => {
+        if (printed === null) {
+          viaProcess();
+          return;
+        }
+        parse(printed);
+      });
+    });
+    const viaProcess = () => {
+      if (settled) return;
+      try {
+        child = spawn(TUIOS, ARGS, {
+          stdio: ["pipe", "pipe", "ignore"],
+          windowsHide: true,
+        });
+      } catch {
+        done(null);
+        return;
+      }
+      timer = setTimeout(() => {
+        try {
+          child.kill();
+        } catch {}
+        done(null);
+      }, HOLD_LIMIT_MS);
+      child.on("error", () => done(null));
+      child.stdin.on("error", () => {});
+      child.stdout.on("error", () => {});
+      child.stdout.on("data", (chunk) => {
+        if (out.length < 65536) out += chunk;
+      });
+      child.on("close", () => parse(out));
+      child.stdin.end(payload);
+    };
+  });
+}
+
+// reply sends the person's answer to opencode: the permission reply route of
+// opencode 1.x, then the SDK method, then the older per-session route.
+async function reply(client, sessionID, requestID, answer) {
+  const body = answer.message ? { reply: answer.reply, message: answer.message } : { reply: answer.reply };
+  const raw = client?._client || client?.client;
+  if (raw && typeof raw.post === "function") {
+    try {
+      await raw.post({
+        url: "/permission/{requestID}/reply",
+        path: { requestID },
+        body,
+        throwOnError: true,
+        headers: { "Content-Type": "application/json" },
+      });
+      return;
+    } catch {}
+  }
+  if (typeof client?.permission?.reply === "function") {
+    try {
+      await client.permission.reply({ requestID, ...body });
+      return;
+    } catch {}
+  }
+  if (sessionID && typeof client?.postSessionIdPermissionsPermissionId === "function") {
+    try {
+      await client.postSessionIdPermissionsPermissionId({
+        path: { id: sessionID, permissionID: requestID },
+        body: { response: answer.reply },
+      });
+    } catch {}
+  }
+}
+
+function text(value) {
+  return typeof value === "string" ? value : "";
+}
+
+export const TuiosAgentState = async (ctx) => {
+  if (process.env.TUIOS_ENV !== "1" && !process.env.TUIOS_AGENT) {
+    return {};
+  }
+  const client = ctx?.client;
+  return {
+    "chat.message": async ({ sessionID }) => {
+      if (sessionID && children.has(sessionID)) return;
+      report("chat.message", sessionID, {});
+    },
+    "tool.execute.before": async (input, output) => {
+      const sessionID = text(input?.sessionID);
+      if (sessionID && children.has(sessionID)) return;
+      remember(text(input?.callID), text(input?.tool), output?.args);
+      report("tool.execute.before", sessionID, {});
+    },
+    event: async ({ event }) => {
+      const type = event?.type;
+      const props = event?.properties ?? {};
+      const info = props.info;
+      if (info?.id && info.parentID) children.add(info.id);
+      if (type === "message.updated") {
+        if (info?.role === "assistant") noteUsage(info);
+        return;
+      }
+      const sessionID = text(props.sessionID) || text(info?.id);
+      if (sessionID && children.has(sessionID)) return;
+      const statusType =
+        type === "session.status"
+          ? typeof props.status === "string"
+            ? props.status
+            : text(props.status?.type)
+          : "";
+      if (statusType === "busy" || statusType === "retry") ended.delete(sessionID);
+      if ((type === "session.idle" || statusType === "idle") && !ended.has(sessionID)) {
+        ended.add(sessionID);
+        while (ended.size > USAGE_MAX) {
+          ended.delete(ended.values().next().value);
+        }
+        sendUsage(sessionID, true);
+      }
+      switch (type) {
+        case "session.created":
+        case "session.idle":
+        case "session.deleted":
+        case "permission.replied":
+        case "question.replied":
+        case "question.rejected":
+          report(type, sessionID, {});
+          break;
+        case "session.status": {
+          const extra = { status: statusType };
+          if (statusType === "retry") {
+            extra.retry_message = text(props.status?.action?.title) || text(props.status?.message);
+          }
+          report(type, sessionID, extra);
+          break;
+        }
+        case "permission.asked":
+        case "permission.updated": {
+          const title = text(props.title) || text(props.permission) || text(props.type);
+          const requestID = text(props.id);
+          if (type !== "permission.asked" || !requestID) {
+            report(type, sessionID, { title });
+            break;
+          }
+          const extra = { title, permission_id: requestID, permission: text(props.permission) };
+          const call = calls.get(text(props.tool?.callID));
+          if (call) {
+            extra.tool = call.tool;
+            extra.tool_input = call.args;
+          }
+          if (Array.isArray(props.always)) {
+            extra.always = props.always.filter((p) => typeof p === "string");
+          }
+          // Not awaited: opencode's event loop must not wait on the person.
+          ask(type, sessionID, extra, ctx?.signal).then((answer) => {
+            if (answer) return reply(client, sessionID, requestID, answer);
+          }).catch(() => {});
+          break;
+        }
+        case "question.asked":
+          report(type, sessionID, { title: text(props.question) || text(props.title) });
+          break;
+        case "session.error":
+          report(type, sessionID, { error: text(props.error?.name) || text(props.error?.data?.message) });
+          break;
+        default:
+          break;
+      }
+    },
+  };
+};
+
+export default {
+  id: "tuios-agent-state-v1",
+  server: TuiosAgentState,
+  setup() {},
+};

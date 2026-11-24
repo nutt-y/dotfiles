@@ -1,5 +1,5 @@
 [appearance]
-theme = "none"  # use the terminal's own colours
+theme = ""  # use the terminal's own colours
 # tmux: set -g repeat-time 1000
 prefix_repeat_time = 1000
 # Terminal-mode focus keys move through Neovim splits first (needs tuios-nvim-navigator)
