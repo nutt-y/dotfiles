@@ -38,7 +38,8 @@
     "composer.subagent.interrupt": "none", // was "ctrl+d"
     "composer.shell.kill": "none", // was "ctrl+d"
     "dialog.move_session.delete": "none", // was "ctrl+d"
-    "session.last": "<leader>shift+g"
+    "session.last": "<leader>shift+g",
+    "session.toggle.thinking": "<leader>h"
   },
   "diffs": {
     "wrap": "word"
